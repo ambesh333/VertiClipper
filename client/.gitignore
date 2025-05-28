@@ -1,0 +1,24 @@
+# Ignore node_modules directory
+node_modules/
+
+# Ignore build and distribution directories
+dist/
+build/
+
+# Ignore log files
+*.log
+
+# Ignore environment variables file
+.env
+.env.local
+.env.*.local
+
+# Ignore editor directories
+.vscode/
+.idea/
+
+# Ignore system files
+.DS_Store
+thumbs.db 
+
+.next

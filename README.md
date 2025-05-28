@@ -2,7 +2,7 @@
 
 A web application to create vertical video clips with custom backgrounds and overlays.
 
-[Watch a demo video on Loom]((https://www.loom.com/share/1c69447564454f2fa2a505dc503cff35?sid=91d9c246-6a8a-469a-9c82-12139576a3be))
+[Watch a demo video on Loom](https://www.loom.com/share/1c69447564454f2fa2a505dc503cff35?sid=91d9c246-6a8a-469a-9c82-12139576a3be)
 
 ## Setup
 

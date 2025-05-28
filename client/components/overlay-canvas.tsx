@@ -19,9 +19,12 @@ interface OverlayCanvasProps {
   overlays: Overlay[]
   onUpdateOverlay: (id: number, updates: Partial<Overlay>) => void
   videoUrl?: string
+  backgroundUrl?: string
+  clipStart: number
+  clipEnd: number
 }
 
-export default function OverlayCanvas({ overlays, onUpdateOverlay, videoUrl }: OverlayCanvasProps) {
+export default function OverlayCanvas({ overlays, onUpdateOverlay, videoUrl, backgroundUrl, clipStart, clipEnd }: OverlayCanvasProps) {
   const canvasRef = useRef<HTMLDivElement>(null)
   const [dragState, setDragState] = useState<{
     overlayId: number | null
@@ -115,29 +118,72 @@ export default function OverlayCanvas({ overlays, onUpdateOverlay, videoUrl }: O
     }
   }, [dragState, onUpdateOverlay, canvasWidth, canvasHeight])
 
+  useEffect(() => {
+    const video = canvasRef.current?.querySelector('video');
+    if (!video) return;
+
+    const handleTimeUpdate = () => {
+      if (video.currentTime >= clipEnd) {
+        video.pause();
+        // Optional: seek back to clipStart after pausing
+        // video.currentTime = clipStart;
+      }
+    };
+
+    video.addEventListener('timeupdate', handleTimeUpdate);
+
+    // Seek to clipStart when videoUrl or clipStart changes
+    if (videoUrl) {
+      video.currentTime = clipStart;
+    }
+
+    return () => {
+      video.removeEventListener('timeupdate', handleTimeUpdate);
+    };
+  }, [videoUrl, clipStart, clipEnd]);
+
+  useEffect(() => {
+    const video = canvasRef.current?.querySelector('video');
+    if (!video) return;
+
+    // Ensure video is muted and plays automatically when videoUrl is present
+    if (videoUrl) {
+      video.muted = true;
+      video.loop = true; // Keep looping the clipped section
+      video.play().catch(error => console.error('Autoplay failed:', error));
+    } else if (!videoUrl && !video.paused) {
+        video.pause();
+    }
+
+  }, [videoUrl]);
+
   return (
     <div className="flex flex-col items-center">
       <div
         ref={canvasRef}
-        className="relative bg-zinc-800 border-2 border-zinc-700 rounded-lg overflow-hidden shadow-xl"
+        className="relative bg-zinc-800 border-2 border-zinc-700 rounded-lg overflow-hidden shadow-xl flex items-center justify-center"
         style={{ width: canvasWidth, height: canvasHeight }}
       >
+        {/* Background Image */}
+        {backgroundUrl && (
+          <img
+            src={backgroundUrl}
+            alt="Background"
+            className="absolute inset-0 w-full h-full object-cover z-0"
+          />
+        )}
+
         {/* Background Video Preview */}
         {videoUrl ? (
           <video
             src={videoUrl}
-            className="absolute inset-0 w-full h-full object-cover opacity-30"
-            muted
-            loop
-            autoPlay
+            className="relative w-auto h-auto max-w-full max-h-full z-10"
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center text-zinc-500">
-              <div className="text-4xl mb-2">📱</div>
-              <div className="text-sm">9:16 Portrait</div>
-              <div className="text-xs">Upload video to preview</div>
-            </div>
+          <div className="relative z-10 text-center text-zinc-500">
+            <div className="text-4xl mb-2">📱</div>
+            <div className="text-sm">9:16 Portrait</div>
+            <div className="text-xs">Upload video to preview</div>
           </div>
         )}
 

@@ -198,7 +198,14 @@ export default function VertiClipper() {
                       <Label className="mb-4 block text-sm font-medium">
                         Drag and position your overlays on the canvas
                       </Label>
-                      <OverlayCanvasComponent overlays={overlays} onUpdateOverlay={updateOverlay} videoUrl={videoUrl} />
+                      <OverlayCanvasComponent
+                        overlays={overlays}
+                        onUpdateOverlay={updateOverlay}
+                        videoUrl={videoUrl}
+                        backgroundUrl={backgroundUrl}
+                        clipStart={clipStart}
+                        clipEnd={clipEnd}
+                      />
                     </div>
 
                     {/* Overlay Controls */}

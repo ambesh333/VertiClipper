@@ -9,8 +9,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
 import OverlayCanvasComponent from "@/components/overlay-canvas"
+import { useToast } from "@/hooks/use-toast"
 
-// Import the new components
+
 import Logo from "./VertiClipper/Logo"
 import PanelContainer from "./VertiClipper/PanelContainer"
 import VideoPreview from "./VertiClipper/VideoPreview"
@@ -42,6 +43,10 @@ export default function VertiClipper() {
 
   const [backgroundFile, setBackgroundFile] = useState<File | null>(null)
   const [backgroundUrl, setBackgroundUrl] = useState<string>("")
+
+  const [sessionId, setSessionId] = useState<string | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
+  const { toast } = useToast()
 
   const addOverlay = () => {
     if (overlays.length < 2) {
@@ -77,8 +82,66 @@ export default function VertiClipper() {
     setVideoUrl("")
   }
 
-  const nextStep = () => {
-    if (currentStep < 4) {
+  const nextStep = async () => {
+    if (currentStep === 1) {
+      if (!videoFile || !backgroundFile) {
+        toast({
+          title: "Missing required assets",
+          description: "Please upload both a Video and a Background image to proceed.",
+          variant: "destructive",
+        })
+        return
+      }
+
+      setIsUploading(true)
+
+      const formData = new FormData()
+      if (videoFile) formData.append("video", videoFile)
+      if (backgroundFile) formData.append("background", backgroundFile)
+      overlays.forEach(overlay => {
+        if (overlay.file) formData.append("overlays", overlay.file)
+      })
+
+      try {
+        const response = await fetch('http://localhost:8000/api/upload', {
+          method: 'POST',
+          body: formData,
+        })
+
+        const result = await response.json()
+        if (result.success === false && result.error) {
+          console.error("Backend error:", result.error)
+          toast({
+            title: "Upload failed",
+            description: result.error,
+            variant: "destructive",
+          })
+        } else if (result.success && result.data?.sessionId) {
+          setSessionId(result.data.sessionId)
+          setCurrentStep(currentStep + 1)
+          toast({
+            title: "Upload successful!",
+            description: "Assets uploaded successfully.",
+          })
+        } else {
+          console.error("Upload response did not contain expected data:", result)
+          toast({
+            title: "Upload failed",
+            description: "Invalid response from server or missing session ID.",
+            variant: "destructive",
+          })
+        }
+      } catch (error) {
+        console.error("Error uploading assets:", error)
+        toast({
+          title: "Upload failed",
+          description: `Error: ${error instanceof Error ? error.message : String(error)}`,
+          variant: "destructive",
+        })
+      } finally {
+        setIsUploading(false)
+      }
+    } else if (currentStep < 3) {
       setCurrentStep(currentStep + 1)
     }
   }
@@ -97,7 +160,9 @@ export default function VertiClipper() {
           <div className="flex items-center">
             <Logo />
           </div>
-          <div className="text-zinc-400 font-medium">Step {currentStep} of 3</div>
+          <div className="text-zinc-400 font-medium">
+            {isUploading ? "Uploading..." : `Step ${currentStep} of 3`}
+          </div>
         </div>
       </div>
 
@@ -115,8 +180,8 @@ export default function VertiClipper() {
                   removeOverlay={removeOverlay}
                   setVideoFile={setVideoFile}
                   setVideoUrl={setVideoUrl}
-                  videoUrl={videoUrl} 
-                  videoFile={videoFile} 
+                  videoUrl={videoUrl}
+                  videoFile={videoFile}
                   backgroundFile={backgroundFile}
                   setBackgroundFile={setBackgroundFile}
                   backgroundUrl={backgroundUrl}
@@ -271,15 +336,15 @@ export default function VertiClipper() {
           <Button
             variant="outline"
             onClick={prevStep}
-            disabled={currentStep === 1}
+            disabled={currentStep === 1 || isUploading}
             className="border-zinc-700 bg-zinc-900 hover:bg-zinc-800"
           >
             Back
           </Button>
 
           {currentStep < 3 ? (
-            <Button onClick={nextStep} className="bg-purple-600 hover:bg-purple-700 shadow-lg">
-              Next <ChevronRight className="ml-2 h-4 w-4" />
+            <Button onClick={nextStep} className="bg-purple-600 hover:bg-purple-700 shadow-lg" disabled={isUploading}>
+              {isUploading ? "Uploading..." : "Next"} <ChevronRight className={`ml-2 h-4 w-4 ${isUploading ? 'opacity-0' : ''}`} />
             </Button>
           ) : (
             <Button className="bg-purple-600 hover:bg-purple-700 shadow-lg w-full md:w-auto mt-4 md:mt-0">

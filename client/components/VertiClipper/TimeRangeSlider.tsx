@@ -71,10 +71,7 @@ function TimeRangeSlider({
         ref={sliderRef}
         className="relative h-6 bg-zinc-800 rounded-full cursor-pointer"
       >
-        {/* Track */}
         <div className="absolute inset-0 bg-zinc-700 rounded-full" />
-
-        {/* Selected range */}
         <div
           className="absolute top-0 bottom-0 bg-purple-600 rounded-full"
           style={{
@@ -83,7 +80,6 @@ function TimeRangeSlider({
           }}
         />
 
-        {/* Current time indicator */}
         <div
           className="absolute top-0 bottom-0 w-0.5 bg-white shadow-lg"
           style={{
@@ -91,14 +87,12 @@ function TimeRangeSlider({
           }}
         />
 
-        {/* Start handle */}
         <div
           className="absolute top-1/2 w-4 h-4 bg-white border-2 border-purple-600 rounded-full cursor-grab active:cursor-grabbing transform -translate-y-1/2 -translate-x-1/2 shadow-lg"
           style={{ left: `${getPositionFromValue(start)}%` }}
           onMouseDown={handleMouseDown("start")}
         />
 
-        {/* End handle */}
         <div
           className="absolute top-1/2 w-4 h-4 bg-white border-2 border-purple-600 rounded-full cursor-grab active:cursor-grabbing transform -translate-y-1/2 -translate-x-1/2 shadow-lg"
           style={{ left: `${getPositionFromValue(end)}%` }}

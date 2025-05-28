@@ -10,12 +10,11 @@ export const composeSchema = z.object({
     overlays: z
       .array(
         z.object({
-          path: z.string(),
           x: z.number().int().min(0),
           y: z.number().int().min(0),
           width: z.number().int().min(1),
           height: z.number().int().min(1),
-          opacity: z.number().min(0).max(1).optional().default(1),
+          opacity: z.number().min(0).max(100).optional().default(1),
         })
       )
       .max(2)

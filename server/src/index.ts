@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import uploadRouter from './routes/upload';
 import composeRouter from './routes/compose';
+import path from 'path';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -18,6 +19,8 @@ app.use((req, res, next) => {
 
 app.use('/api/upload', uploadRouter);
 app.use('/api/compose', composeRouter);
+
+app.use('/outputs', express.static(path.join(__dirname, '..', 'outputs')));
 
 app.get('/api/health', (req, res) => {
   res.json({

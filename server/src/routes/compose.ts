@@ -7,6 +7,7 @@ import { composeSchema } from '../validators/composeSchema';
 const router = Router();
 
 router.post('/', async (req: Request, res: Response): Promise<void> => {
+  console.log("body",req.body)
   const startTime = Date.now();
 
   try {

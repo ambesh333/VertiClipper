@@ -57,8 +57,7 @@ export const getVideoMetadata = (videoPath: string): Promise<VideoMetadata> => {
         const width = videoStream.width || 0;
         const height = videoStream.height || 0;
         
-        // Calculate FPS
-        let fps = 30; // default
+        let fps = 30; 
         if (videoStream.r_frame_rate) {
           const [num, den] = videoStream.r_frame_rate.split('/').map(Number);
           fps = den ? num / den : 30;
@@ -92,57 +91,44 @@ export const composeVerticalVideo = (config: CompositionConfig): Promise<string>
       console.log('📐 Output dimensions:', `${config.outputWidth}x${config.outputHeight}`);
       console.log('✂️ Clip duration:', `${config.clipStart}s - ${config.clipEnd}s`);
       
-      // Calculate video scaling and positioning for center placement
       const videoMetadata = await getVideoMetadata(config.videoPath);
       const aspectRatio = videoMetadata.width / videoMetadata.height;
-      
-      // Scale video to fit within canvas while maintaining aspect ratio
       let scaledWidth = config.outputWidth;
       let scaledHeight = Math.round(scaledWidth / aspectRatio);
       
-      // If height exceeds canvas, scale by height instead
-      if (scaledHeight > config.outputHeight * 0.7) { // Leave 30% for overlays
+      if (scaledHeight > config.outputHeight * 0.7) { 
         scaledHeight = Math.round(config.outputHeight * 0.7);
         scaledWidth = Math.round(scaledHeight * aspectRatio);
       }
       
-      // Center position
       const videoX = Math.round((config.outputWidth - scaledWidth) / 2);
       const videoY = Math.round((config.outputHeight - scaledHeight) / 2);
       
       console.log('📹 Video placement:', `${scaledWidth}x${scaledHeight} at (${videoX}, ${videoY})`);
 
-      // Build FFmpeg command
       let command = ffmpeg();
       
-      // Input files
       command = command
-        .input(config.backgroundPath) // Background image
-        .input(config.videoPath);     // Main video
-      
-      // Add overlay inputs
+        .input(config.backgroundPath)
+        .input(config.videoPath);    
+
       config.overlays.forEach((overlay) => {
         command = command.input(overlay.path);
       });
 
-      // Build filter complex
       let filterComplex = [];
-      
-      // 1. Scale background to output size
+
       filterComplex.push(`[0:v]scale=${config.outputWidth}:${config.outputHeight}[bg]`);
-      
-      // 2. Trim and scale video
+
       filterComplex.push(
         `[1:v]trim=start=${config.clipStart}:end=${config.clipEnd},setpts=PTS-STARTPTS,scale=${scaledWidth}:${scaledHeight}[video]`
       );
       
-      // 3. Overlay video on background
       filterComplex.push(`[bg][video]overlay=${videoX}:${videoY}[v1]`);
-      
-      // 4. Add overlays
+
       let currentLabel = 'v1';
       config.overlays.forEach((overlay, index) => {
-        const inputIndex = index + 2; // Background=0, Video=1, Overlays start at 2
+        const inputIndex = index + 2; 
         const outputLabel = index === config.overlays.length - 1 ? 'final' : `v${index + 2}`;
         const opacity = overlay.opacity || 1.0;
         
@@ -166,7 +152,6 @@ export const composeVerticalVideo = (config: CompositionConfig): Promise<string>
         currentLabel = outputLabel;
       });
 
-      // Apply filter complex
       command = command
         .complexFilter(filterComplex)
         .map('[final]')
@@ -178,12 +163,11 @@ export const composeVerticalVideo = (config: CompositionConfig): Promise<string>
           '-profile:v high',
           '-level 4.0',
           '-pix_fmt yuv420p',
-          '-movflags +faststart', // Enable fast start for web playback
-          `-r ${Math.min(videoMetadata.fps, 30)}` // Cap FPS at 30
+          '-movflags +faststart',
+          `-r ${Math.min(videoMetadata.fps, 30)}` 
         ])
         .output(outputPath);
 
-      // Add progress tracking
       command.on('start', (commandLine: string) => {
         console.log('🚀 FFmpeg command:', commandLine);
       });

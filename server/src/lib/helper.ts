@@ -10,7 +10,7 @@ export const validateFileType = (file: Express.Multer.File): { valid: boolean; m
       const videoTypes = [
         'video/mp4',
         'video/quicktime',
-        'video/x-msvideo', // AVI
+        'video/x-msvideo', 
         'video/webm',
         'video/x-ms-wmv',
         'video/3gpp'
@@ -50,7 +50,6 @@ export const validateFileType = (file: Express.Multer.File): { valid: boolean; m
       };
   }
   
-  // Check file extension as additional validation
   const ext = path.extname(originalname).toLowerCase();
   const allowedVideoExts = ['.mp4', '.mov', '.avi', '.webm', '.wmv', '.3gp'];
   const allowedImageExts = ['.jpg', '.jpeg', '.png', '.webp', '.bmp', '.tiff'];
@@ -89,7 +88,7 @@ export const createDirectories = async (): Promise<void> => {
 
 export const cleanupOldFiles = async (): Promise<void> => {
   const dirs = ['uploads', 'outputs'];
-  const cutoffTime = Date.now() - (24 * 60 * 60 * 1000); // 24 hours ago
+  const cutoffTime = Date.now() - (24 * 60 * 60 * 1000); 
   
   for (const dir of dirs) {
     try {
@@ -123,9 +122,9 @@ export const formatFileSize = (bytes: number): string => {
 
 export const sanitizeFilename = (filename: string): string => {
   return filename
-    .replace(/[^\w\s.-]/g, '') // Remove special characters except dots, hyphens, spaces
-    .replace(/\s+/g, '_')       // Replace spaces with underscores
-    .substring(0, 100);         // Limit length
+    .replace(/[^\w\s.-]/g, '') 
+    .replace(/\s+/g, '_')     
+    .substring(0, 100);    
 };
 
 export const fileExists = async (filePath: string): Promise<boolean> => {

@@ -42,21 +42,6 @@ function UploadAssetsPanel({
   className
 }: UploadAssetsPanelProps) {
 
-  const addOverlay = () => {
-    if (overlays.length < 2) {
-      setOverlays([
-        ...overlays,
-        {
-          id: Date.now(),
-          x: 50,
-          y: 50,
-          width: 100,
-          height: 100,
-          opacity: 100,
-        },
-      ]);
-    }
-  };
 
   const handleBackgroundFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -194,15 +179,6 @@ function UploadAssetsPanel({
               );
             })}
           </div>
-          {overlays.length < 2 && (
-            <Button
-              variant="outline"
-              onClick={addOverlay}
-              className="w-full border-dashed border-zinc-700 bg-zinc-900 hover:bg-zinc-800"
-            >
-              <Plus className="mr-2 h-4 w-4" /> Add Overlay Slot
-            </Button>
-          )}
         </div>
 
         <div className="lg:col-span-1">
